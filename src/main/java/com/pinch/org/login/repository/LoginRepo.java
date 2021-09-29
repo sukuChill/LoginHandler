@@ -12,4 +12,6 @@ public interface LoginRepo extends MongoRepository<User, String> {
 
 	Optional<User> findByEmail(String email);
 
+	Optional<User> findByUserNameAndIsActive(String username, boolean b);
+
 }

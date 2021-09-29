@@ -5,11 +5,13 @@ import javax.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.pinch.org.login.containers.HandleForgotPasswordDto;
 import com.pinch.org.login.containers.LoginRequestDto;
 import com.pinch.org.login.containers.signUpRequestDto;
 import com.pinch.org.login.entity.User;
@@ -55,4 +57,10 @@ public class LoginController {
 	public Response<String> forgotPasswordUsername(@RequestParam String userName) throws MessagingException {
 		return loginService.forgotPasswordUsername(userName);
 	}
+
+	@PutMapping("forgotPassword")
+	public Response<String> handleForgotPassword(@RequestBody HandleForgotPasswordDto request) {
+		return loginService.handleForgotPassowrd(request);
+	}
+
 }

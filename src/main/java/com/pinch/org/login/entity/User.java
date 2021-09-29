@@ -1,10 +1,13 @@
 package com.pinch.org.login.entity;
 
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "user")
 public class User {
 
+	@Id
+	private String _id;
 	private String userId;
 	private String userName;
 	private String email;
@@ -13,6 +16,14 @@ public class User {
 	private Long modifiedTime;
 	private Boolean isActive;
 	private Boolean isVerifiedEmail;
+
+	public String get_id() {
+		return _id;
+	}
+
+	public void set_id(String _id) {
+		this._id = _id;
+	}
 
 	public Boolean getIsVerifiedEmail() {
 		return isVerifiedEmail;

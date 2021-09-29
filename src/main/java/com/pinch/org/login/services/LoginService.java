@@ -15,6 +15,7 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
 import com.pinch.org.login.containers.ForgotPasswordTemplateDto;
+import com.pinch.org.login.containers.HandleForgotPasswordDto;
 import com.pinch.org.login.containers.LoginRequestDto;
 import com.pinch.org.login.containers.signUpRequestDto;
 import com.pinch.org.login.entity.ForgotPasswordToken;
@@ -208,6 +209,47 @@ public class LoginService {
 		helper.setText(processedString, true);
 		helper.setTo(email);
 		mailSender.send(mimeMessage);
+	}
+
+	public Response<String> handleForgotPassowrd(HandleForgotPasswordDto request) {
+		Response<String> response = new Response<String>();
+		Optional<ForgotPasswordToken> optional = forgotPasswordRepo.findByToken(request.getToken());
+
+		if (optional.isEmpty()) {
+			response.setSuccess(false);
+			response.setMessage(LoginConstants.INVALID_TOKEN);
+			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+			return response;
+		}
+
+		// checking if the link is created within 2 hours.
+		ForgotPasswordToken storedToken = optional.get();
+		long timeExpired = System.currentTimeMillis() - storedToken.getCreatedDate();// time since link creation
+		if (timeExpired > 7200000) {
+			response.setSuccess(false);
+			response.setMessage(LoginConstants.LINK_EXPIRED);
+			response.setStatus(HttpServletResponse.SC_REQUEST_TIMEOUT);
+			return response;
+		}
+
+		String username = storedToken.getUserName();
+		Optional<User> optionalUser = loginRepo.findByUserNameAndIsActive(username, true);
+		if (optionalUser.isEmpty()) {
+			response.setSuccess(false);
+			response.setMessage(LoginConstants.INVALID_USER);
+			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+			return response;
+		}
+		String updatedPassword = PasswordEncoder.passwordEncode(request.getPassword());
+		User user = optionalUser.get();
+		user.setModifiedTime(System.currentTimeMillis());
+		user.setPassword(updatedPassword);
+		loginRepo.save(user);
+
+		response.setSuccess(true);
+		response.setMessage(LoginConstants.PASSWORD_UPDATED_SUCCESSFULLY);
+		response.setStatus(HttpServletResponse.SC_OK);
+		return response;
 	}
 
 	static boolean isValidEmail(String email) {
