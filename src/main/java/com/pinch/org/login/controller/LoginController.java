@@ -7,12 +7,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.pinch.org.login.containers.HandleForgotPasswordDto;
 import com.pinch.org.login.containers.LoginRequestDto;
+import com.pinch.org.login.containers.LogoutRequestDto;
 import com.pinch.org.login.containers.signUpRequestDto;
 import com.pinch.org.login.entity.User;
 import com.pinch.org.login.services.LoginService;
@@ -44,6 +46,12 @@ public class LoginController {
 	@PostMapping("login")
 	public Response<String> login(@RequestBody LoginRequestDto request) {
 		return loginService.login(request);
+	}
+
+	@PostMapping("logout")
+	public Response<String> logout(@RequestHeader String token, @RequestBody LogoutRequestDto request) {
+		request.setToken(token);
+		return loginService.logout(request);
 	}
 
 	// forgot password request by entering email
