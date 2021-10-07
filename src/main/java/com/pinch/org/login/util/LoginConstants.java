@@ -32,8 +32,14 @@ public class LoginConstants {
 
 	public static final String INVALID_TOKEN = "Invalid link. Provided token is invalid";
 
+	public static final String INVALID_LOGIN_TOKEN = "Invalid Login. Logout failed.";
+
+	public static final String LOGOUT_SUCCESSFULL = "Successfully logged out.";
+
 	public static final String PASSWORD_UPDATED_SUCCESSFULLY = "Password updated successfully";
 
 	public static final String LINK_EXPIRED = "Link has expired. Create another request.";
+
+	public static final String USERNAME_TOKEN_MISMATCH = "Invalid login. Username token mismatch";
 
 }

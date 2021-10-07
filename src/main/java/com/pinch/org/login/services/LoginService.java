@@ -17,6 +17,7 @@ import org.thymeleaf.context.Context;
 import com.pinch.org.login.containers.ForgotPasswordTemplateDto;
 import com.pinch.org.login.containers.HandleForgotPasswordDto;
 import com.pinch.org.login.containers.LoginRequestDto;
+import com.pinch.org.login.containers.LogoutRequestDto;
 import com.pinch.org.login.containers.signUpRequestDto;
 import com.pinch.org.login.entity.ForgotPasswordToken;
 import com.pinch.org.login.entity.LoginAuthToken;
@@ -267,6 +268,32 @@ public class LoginService {
 		else
 			userId = LoginConstants.USERID_PREFIX + ++userCount;// userid is one plus total number of users.
 		return userId;
+	}
+
+	public Response<String> logout(LogoutRequestDto request) {
+		Response<String> response = new Response<>();
+		Optional<LoginAuthToken> optional = loginAuthTokenRepo.findByToken(request.getToken());
+
+		if (optional.isEmpty()) {
+			response.setSuccess(false);
+			response.setMessage(LoginConstants.INVALID_LOGIN_TOKEN);
+			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+			return response;
+		}
+
+		LoginAuthToken tokenObject = optional.get();
+
+		if (!tokenObject.getUserName().equals(request.getUserName())) {
+			response.setSuccess(false);
+			response.setMessage(LoginConstants.USERNAME_TOKEN_MISMATCH);
+			response.setStatus(HttpServletResponse.SC_CONFLICT);
+			return response;
+		}
+		loginAuthTokenRepo.delete(tokenObject);
+		response.setSuccess(true);
+		response.setMessage(LoginConstants.LOGOUT_SUCCESSFULL);
+		response.setStatus(HttpServletResponse.SC_OK);
+		return response;
 	}
 
 }
