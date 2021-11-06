@@ -1,5 +1,8 @@
 package com.pinch.org.login.entity;
 
+import java.util.Date;
+import java.util.Map;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -12,10 +15,18 @@ public class User {
 	private String userName;
 	private String email;
 	private String password;
+	private String firstName;
+	private String lastName;
+	private String dateOfBirth;
+	private String location;
 	private Long createdTime;
 	private Long modifiedTime;
 	private Boolean isActive;
 	private Boolean isVerifiedEmail;
+	private String bio;
+	private Map<String, String> socialSquare;
+	private String profilePic;
+	private String coverPic;
 
 	public String get_id() {
 		return _id;
@@ -23,6 +34,70 @@ public class User {
 
 	public void set_id(String _id) {
 		this._id = _id;
+	}
+
+	public String getLocation() {
+		return location;
+	}
+
+	public void setLocation(String location) {
+		this.location = location;
+	}
+
+	public String getFirstName() {
+		return firstName;
+	}
+
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
+
+	public String getLastName() {
+		return lastName;
+	}
+
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
+	}
+
+	public String getBio() {
+		return bio;
+	}
+
+	public void setBio(String bio) {
+		this.bio = bio;
+	}
+
+	public String getDateOfBirth() {
+		return dateOfBirth;
+	}
+
+	public void setDateOfBirth(String dateOfBirth) {
+		this.dateOfBirth = dateOfBirth;
+	}
+
+	public Map<String, String> getSocialSquare() {
+		return socialSquare;
+	}
+
+	public void setSocialSquare(Map<String, String> socialSquare) {
+		this.socialSquare = socialSquare;
+	}
+
+	public String getProfilePic() {
+		return profilePic;
+	}
+
+	public void setProfilePic(String profilePic) {
+		this.profilePic = profilePic;
+	}
+
+	public String getCoverPic() {
+		return coverPic;
+	}
+
+	public void setCoverPic(String coverPic) {
+		this.coverPic = coverPic;
 	}
 
 	public Boolean getIsVerifiedEmail() {

@@ -1,5 +1,7 @@
 package com.pinch.org.login.services;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import javax.mail.MessagingException;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
+import com.pinch.org.login.containers.EditProfileDto;
 import com.pinch.org.login.containers.ForgotPasswordTemplateDto;
 import com.pinch.org.login.containers.HandleForgotPasswordDto;
 import com.pinch.org.login.containers.LoginRequestDto;
@@ -249,6 +252,70 @@ public class LoginService {
 
 		response.setSuccess(true);
 		response.setMessage(LoginConstants.PASSWORD_UPDATED_SUCCESSFULLY);
+		response.setStatus(HttpServletResponse.SC_OK);
+		return response;
+	}
+
+	public Response<String> editProfile(EditProfileDto request) {
+		Response<String> response = new Response<>();
+		Optional<LoginAuthToken> optional = loginAuthTokenRepo.findByToken(request.getToken());
+
+		if (optional.isEmpty()) {
+			response.setSuccess(false);
+			response.setMessage(LoginConstants.INVALID_LOGIN_TOKEN);
+			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+			return response;
+		}
+		String userName = optional.get().getUserName();
+		Optional<User> userOptional = loginRepo.findByUserName(userName);
+		if (!userOptional.isPresent()) {
+			response.setSuccess(false);
+			response.setMessage(LoginConstants.INVALID_USERNAME);
+			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+			return response;
+		}
+		User user = userOptional.get();
+
+		if (!request.getFirstName().isEmpty())
+			user.setFirstName(request.getFirstName());
+
+		if (!request.getLastName().isEmpty())
+			user.setLastName(request.getLastName());
+
+		if (!request.getBio().isEmpty())
+			user.setBio(request.getBio());
+
+		if (!request.getDateOfBirth().isEmpty())
+			user.setDateOfBirth(request.getDateOfBirth());
+
+		if (!request.getLocation().isEmpty())
+			user.setLocation(request.getLocation());
+
+		if (!request.getSocialSquare().isEmpty()) {
+			Map<String, String> social = new HashMap<>();
+
+			if (request.getSocialSquare().containsKey("insta"))
+				social.put("insta", request.getSocialSquare().get("insta"));
+
+			if (request.getSocialSquare().containsKey("fb"))
+				social.put("insta", request.getSocialSquare().get("fb"));
+
+			if (request.getSocialSquare().containsKey("twitter"))
+				social.put("insta", request.getSocialSquare().get("twitter"));
+
+			if (request.getSocialSquare().containsKey("snap"))
+				social.put("insta", request.getSocialSquare().get("sanp"));
+
+			if (request.getSocialSquare().containsKey("youtube"))
+				social.put("insta", request.getSocialSquare().get("youtube"));
+
+			user.setSocialSquare(social);
+		}
+		user.setModifiedTime(System.currentTimeMillis());
+
+		loginRepo.save(user);
+		response.setSuccess(true);
+		response.setMessage(LoginConstants.PROFILE_UPDATED_SUCCESSFULLY);
 		response.setStatus(HttpServletResponse.SC_OK);
 		return response;
 	}

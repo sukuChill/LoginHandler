@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.pinch.org.login.containers.EditProfileDto;
 import com.pinch.org.login.containers.HandleForgotPasswordDto;
 import com.pinch.org.login.containers.LoginRequestDto;
 import com.pinch.org.login.containers.LogoutRequestDto;
@@ -69,6 +70,13 @@ public class LoginController {
 	@PutMapping("forgotPassword")
 	public Response<String> handleForgotPassword(@RequestBody HandleForgotPasswordDto request) {
 		return loginService.handleForgotPassowrd(request);
+	}
+
+	@PutMapping("editProfile")
+	public Response<String> editProfile(@RequestHeader String token, @RequestBody EditProfileDto request) {
+
+		request.setToken(token);
+		return loginService.editProfile(request);
 	}
 
 }

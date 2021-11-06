@@ -42,4 +42,6 @@ public class LoginConstants {
 
 	public static final String USERNAME_TOKEN_MISMATCH = "Invalid login. Username token mismatch";
 
+	public static final String PROFILE_UPDATED_SUCCESSFULLY = "Profile has been updated successfully";
+
 }
