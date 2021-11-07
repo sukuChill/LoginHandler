@@ -1,5 +1,7 @@
 package com.pinch.org.login.controller;
 
+import java.io.IOException;
+
 import javax.mail.MessagingException;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.pinch.org.login.containers.EditProfileDto;
 import com.pinch.org.login.containers.HandleForgotPasswordDto;
@@ -79,4 +82,9 @@ public class LoginController {
 		return loginService.editProfile(request);
 	}
 
+	@PostMapping("editProfileImage")
+	public Response<String> editProfileImage(@RequestParam MultipartFile image, @RequestHeader String token)
+			throws IOException {
+		return loginService.editProfileImage(image, token);
+	}
 }

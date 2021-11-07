@@ -44,4 +44,10 @@ public class LoginConstants {
 
 	public static final String PROFILE_UPDATED_SUCCESSFULLY = "Profile has been updated successfully";
 
+	public static final String INVALID_IMAGE = "Invalid image. Image size should be within 50KB to 5MB";
+
+	public static final String INVALID_FILE_TYPE = "Invalid image. Image should be JPG or JPEG";
+
+	public static final String PROFILE_IMAGE_UPDATED_SUCCESSFULLY = "Profile image updated successfullly";
+
 }

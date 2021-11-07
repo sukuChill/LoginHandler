@@ -1,5 +1,8 @@
 package com.pinch.org.login.services;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -13,9 +16,18 @@ import org.springframework.core.env.Environment;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
+import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.PutObjectResult;
 import com.pinch.org.login.containers.EditProfileDto;
 import com.pinch.org.login.containers.ForgotPasswordTemplateDto;
 import com.pinch.org.login.containers.HandleForgotPasswordDto;
@@ -317,6 +329,76 @@ public class LoginService {
 		response.setSuccess(true);
 		response.setMessage(LoginConstants.PROFILE_UPDATED_SUCCESSFULLY);
 		response.setStatus(HttpServletResponse.SC_OK);
+		return response;
+	}
+
+	public Response<String> editProfileImage(MultipartFile image, String token) throws IOException {
+		Response<String> response = new Response<>();
+		Optional<LoginAuthToken> optional = loginAuthTokenRepo.findByToken(token);
+
+		if (optional.isEmpty()) {
+			response.setSuccess(false);
+			response.setMessage(LoginConstants.INVALID_LOGIN_TOKEN);
+			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+			return response;
+		}
+		String userName = optional.get().getUserName();
+		Optional<User> userOptional = loginRepo.findByUserName(userName);
+		if (!userOptional.isPresent()) {
+			response.setSuccess(false);
+			response.setMessage(LoginConstants.INVALID_USERNAME);
+			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+			return response;
+		}
+		User user = userOptional.get();
+
+		// image should be > 50kb and <5mb
+		if (image.isEmpty() || image.getSize() > 5000000 || image.getSize() < 50000) {
+			response.setSuccess(false);
+			response.setMessage(LoginConstants.INVALID_IMAGE);
+			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+			return response;
+		}
+		if (!image.getContentType().equals("image/jpeg")) {
+			response.setSuccess(false);
+			response.setMessage(LoginConstants.INVALID_FILE_TYPE);
+			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+			return response;
+		}
+
+		BasicAWSCredentials creds = new BasicAWSCredentials(environment.getProperty("s3.AccessKeyID"),
+				environment.getProperty("s3.SecretAccessKey"));
+
+		AmazonS3 s3Client = AmazonS3ClientBuilder.standard().withCredentials(new AWSStaticCredentialsProvider(creds))
+				.withRegion(Regions.AP_SOUTH_1).build();
+
+		//converting multipart file to "File" for aws upload
+		File convFile = new File(image.getOriginalFilename());
+		convFile.createNewFile();
+		FileOutputStream fos = new FileOutputStream(convFile);
+		fos.write(image.getBytes());
+		fos.close();
+
+		
+		String fileName = user.getUserName() + "_" + System.currentTimeMillis();
+
+		//"wbxhxbxq5dx8e3v8" is the folder inside "imagefileshoster" bucket
+		//"s3Client.putObject" requires "<groupId>javax.xml.bind</groupId>" dependency
+		//"CannedAccessControlList.PublicRead" makes readable for everyone
+		s3Client.putObject(new PutObjectRequest("imagefileshoster/wbxhxbxq5dx8e3v8", fileName, convFile)
+				.withCannedAcl(CannedAccessControlList.PublicRead));
+		convFile.delete();
+
+		//sample url -> https://imagefileshoster.s3.ap-south-1.amazonaws.com/pfp/ucsssshfdfdsfs1636300807482
+		String imageURL = "https://imagefileshoster.s3.ap-south-1.amazonaws.com/wbxhxbxq5dx8e3v8/" + fileName;
+
+		user.setProfilePic(imageURL);
+		loginRepo.save(user);
+
+		response.setSuccess(true);
+		response.setMessage(LoginConstants.PROFILE_IMAGE_UPDATED_SUCCESSFULLY);
+		response.setStatus(HttpServletResponse.SC_OK);
+		response.setData(imageURL);
 		return response;
 	}
 
