@@ -20,14 +20,14 @@ import org.springframework.web.multipart.MultipartFile;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
+import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.regions.Regions;
+import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.services.s3.model.PutObjectResult;
 import com.pinch.org.login.containers.EditProfileDto;
 import com.pinch.org.login.containers.ForgotPasswordTemplateDto;
 import com.pinch.org.login.containers.HandleForgotPasswordDto;
@@ -338,7 +338,7 @@ public class LoginService {
 
 		if (optional.isEmpty()) {
 			response.setSuccess(false);
-			response.setMessage(LoginConstants.INVALID_LOGIN_TOKEN);
+			response.setMessage(LoginConstants.INVALID_TOKEN);
 			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
 			return response;
 		}
@@ -366,31 +366,31 @@ public class LoginService {
 			return response;
 		}
 
-		BasicAWSCredentials creds = new BasicAWSCredentials(environment.getProperty("s3.AccessKeyID"),
-				environment.getProperty("s3.SecretAccessKey"));
-
-		AmazonS3 s3Client = AmazonS3ClientBuilder.standard().withCredentials(new AWSStaticCredentialsProvider(creds))
-				.withRegion(Regions.AP_SOUTH_1).build();
-
-		//converting multipart file to "File" for aws upload
+		// converting multipart file to "File" for aws upload
 		File convFile = new File(image.getOriginalFilename());
 		convFile.createNewFile();
 		FileOutputStream fos = new FileOutputStream(convFile);
 		fos.write(image.getBytes());
 		fos.close();
 
-		
 		String fileName = user.getUserName() + "_" + System.currentTimeMillis();
 
-		//"wbxhxbxq5dx8e3v8" is the folder inside "imagefileshoster" bucket
-		//"s3Client.putObject" requires "<groupId>javax.xml.bind</groupId>" dependency
-		//"CannedAccessControlList.PublicRead" makes readable for everyone
-		s3Client.putObject(new PutObjectRequest("imagefileshoster/wbxhxbxq5dx8e3v8", fileName, convFile)
+		AWSCredentialsProvider spacesCreds = new AWSStaticCredentialsProvider(new BasicAWSCredentials(
+				environment.getProperty("spaces.AccessKeyID"), environment.getProperty("spaces.SecretAccessKey")));
+
+		AmazonS3 spacesClient = AmazonS3ClientBuilder.standard().withCredentials(spacesCreds).withEndpointConfiguration(
+				new AwsClientBuilder.EndpointConfiguration("sgp1.digitaloceanspaces.com", "sgp1")).build();
+
+		// "wbxhxbxq5dx8e3v8" is the folder inside "imagefileshoster" bucket
+		// "s3Client.putObject" requires "<groupId>javax.xml.bind</groupId>" dependency
+		// "CannedAccessControlList.PublicRead" makes readable for everyone
+		spacesClient.putObject(new PutObjectRequest("imagefileshoster/wbxhxbxq5dx8e3v8", fileName, convFile)
 				.withCannedAcl(CannedAccessControlList.PublicRead));
 		convFile.delete();
 
-		//sample url -> https://imagefileshoster.s3.ap-south-1.amazonaws.com/pfp/ucsssshfdfdsfs1636300807482
-		String imageURL = "https://imagefileshoster.s3.ap-south-1.amazonaws.com/wbxhxbxq5dx8e3v8/" + fileName;
+		// sample url ->
+		// https://sgp1.digitaloceanspaces.com/imagefileshoster/wbxhxbxq5dx8e3v8/ucssssh_1639119187145
+		String imageURL = spacesClient.getUrl("imagefileshoster/wbxhxbxq5dx8e3v8", fileName).toString();
 
 		user.setProfilePic(imageURL);
 		loginRepo.save(user);
