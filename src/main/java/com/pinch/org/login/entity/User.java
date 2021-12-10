@@ -1,6 +1,5 @@
 package com.pinch.org.login.entity;
 
-import java.util.Date;
 import java.util.Map;
 
 import org.springframework.data.annotation.Id;
@@ -27,6 +26,24 @@ public class User {
 	private Map<String, String> socialSquare;
 	private String profilePic;
 	private String coverPic;
+	private Map<String, Long> following;
+	private Map<String, Long> followers;
+
+	public Map<String, Long> getFollowing() {
+		return following;
+	}
+
+	public void setFollowing(Map<String, Long> following) {
+		this.following = following;
+	}
+
+	public Map<String, Long> getFollowers() {
+		return followers;
+	}
+
+	public void setFollowers(Map<String, Long> followers) {
+		this.followers = followers;
+	}
 
 	public String get_id() {
 		return _id;
