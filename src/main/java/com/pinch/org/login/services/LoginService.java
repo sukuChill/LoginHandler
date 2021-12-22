@@ -28,6 +28,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.mongodb.BasicDBList;
 import com.pinch.org.login.containers.EditProfileDto;
 import com.pinch.org.login.containers.ForgotPasswordTemplateDto;
 import com.pinch.org.login.containers.HandleForgotPasswordDto;
@@ -100,6 +101,8 @@ public class LoginService {
 		user.setIsVerifiedEmail(false);
 		user.setPassword(PasswordEncoder.passwordEncode(request.getPassword()));
 		user.setUserId(generateUserId());
+		user.setFollowers(new BasicDBList());
+		user.setFollowing(new BasicDBList());
 		loginRepo.save(user);
 
 		sendHtmlMail(request, "SignupWelcome", LoginConstants.SIGNUP_EMAIL_SUBJECT, request.getEmail());
@@ -310,16 +313,16 @@ public class LoginService {
 				social.put("insta", request.getSocialSquare().get("insta"));
 
 			if (request.getSocialSquare().containsKey("fb"))
-				social.put("insta", request.getSocialSquare().get("fb"));
+				social.put("fb", request.getSocialSquare().get("fb"));
 
 			if (request.getSocialSquare().containsKey("twitter"))
-				social.put("insta", request.getSocialSquare().get("twitter"));
+				social.put("twitter", request.getSocialSquare().get("twitter"));
 
 			if (request.getSocialSquare().containsKey("snap"))
-				social.put("insta", request.getSocialSquare().get("sanp"));
+				social.put("sanp", request.getSocialSquare().get("sanp"));
 
 			if (request.getSocialSquare().containsKey("youtube"))
-				social.put("insta", request.getSocialSquare().get("youtube"));
+				social.put("youtube", request.getSocialSquare().get("youtube"));
 
 			user.setSocialSquare(social);
 		}

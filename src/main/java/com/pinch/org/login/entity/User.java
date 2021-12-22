@@ -5,6 +5,8 @@ import java.util.Map;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import com.mongodb.BasicDBList;
+
 @Document(collection = "user")
 public class User {
 
@@ -26,22 +28,22 @@ public class User {
 	private Map<String, String> socialSquare;
 	private String profilePic;
 	private String coverPic;
-	private Map<String, Long> following;
-	private Map<String, Long> followers;
+	private BasicDBList following;
+	private BasicDBList followers;
 
-	public Map<String, Long> getFollowing() {
+	public BasicDBList getFollowing() {
 		return following;
 	}
 
-	public void setFollowing(Map<String, Long> following) {
+	public void setFollowing(BasicDBList following) {
 		this.following = following;
 	}
 
-	public Map<String, Long> getFollowers() {
+	public BasicDBList getFollowers() {
 		return followers;
 	}
 
-	public void setFollowers(Map<String, Long> followers) {
+	public void setFollowers(BasicDBList followers) {
 		this.followers = followers;
 	}
 
